@@ -2,6 +2,9 @@
 
 # pripojeni knihoven
 import time
+from datetime import datetime
+from pytz import timezone
+from tzlocal import get_localzone
 import Adafruit_SSD1306
 
 from PIL import Image
@@ -50,25 +53,17 @@ while True:
     # Vykresleni cerneho obdelnika pro vymazani obrazovky
     draw.rectangle((0,0,width,height), outline=0, fill=0)
 
-    # Skripty pro nacteni informaci o systemu, zdroj:
-    # https://unix.stackexchange.com/questions/119126/command-to-display-memory-usage-disk-usage-and-cpu-load
     cmd = "hostname -I | cut -d\' \' -f1"
     IP = subprocess.check_output(cmd, shell = True )
-    cmd = "top -bn1 | grep load | awk '{printf \"CPU Load: %.2f\", $(NF-2)}'"
-    CPU = subprocess.check_output(cmd, shell = True )
-    cmd = "free -m | awk 'NR==2{printf \"Mem: %s/%sMB %.2f%%\", $3,$2,$3*100/$2 }'"
-    MemUsage = subprocess.check_output(cmd, shell = True )
-    cmd = "df -h | awk '$NF==\"/\"{printf \"Disk: %d/%dGB %s\", $3,$2,$5}'"
-    Disk = subprocess.check_output(cmd, shell = True )
 
-    # Vypsani nactenych udaju na souradnice x, top s danym fontem a barvou (fill)
+    now_utc = datetime.now(timezone('UTC'))
+    now_local = now_utc.astimezone(timezone('Europe/Prague'))
 
-    draw.text((x, top),       "IP: " + str(IP),  font=font, fill=255)
-    draw.text((x, top+8),     str(CPU), font=font, fill=255)
-    draw.text((x, top+16),    str(MemUsage),  font=font, fill=255)
-    draw.text((x, top+25),    str(Disk),  font=font, fill=255)
-    # Vypsani naseho textu
-    draw.text((x, top+32),    str("Arduino navody"),  font=font, fill=127)
+    draw.text((x, top), "Sku rAAS module", font=font, fill=255)
+
+    draw.text((x, top + 9), "IP: " + str(IP)[2:-3],  font=font, fill=255)
+    draw.text((x, top + 17), now_local.strftime("%H:%M:%S %d.%m.%Y"), font=font, fill=255)
+
 
     # Zobrazeni na displej
     disp.image(image)
